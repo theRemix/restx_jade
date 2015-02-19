@@ -1,0 +1,7 @@
+{
+  "name": "Restx Jade",
+  "description": "demo app for restx",
+  "repository": "https://github.com/theRemix/restx_jade",
+  "logo": "haxe.org/img/haxe-logo.svg",
+  "keywords": ["haxe","node", "express"]
+}
