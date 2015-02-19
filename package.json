@@ -1,0 +1,31 @@
+{
+  "name": "restx_jade",
+  "version": "1.0.0",
+  "description": "demo app for restx",
+  "main": "bin/app.js",
+  "bin": {
+    "restx_jade": "app.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theRemix/restx_jade"
+  },
+  "keywords": [
+    "haxe",
+    "express",
+    "js",
+    "framework"
+  ],
+  "author": "@theRemix",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/theRemix/restx_jade/issues"
+  },
+  "homepage": "https://github.com/theRemix/restx_jade",
+  "dependencies": {
+    "express": "^4.11.2"
+  }
+}
