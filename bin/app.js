@@ -73,7 +73,7 @@ var Main = function(router) {
 };
 Main.__name__ = true;
 Main.main = function() {
-	var app = new restx.App(8888);
+	var app = new restx.App(process.env.PORT || 8888);
 	app.start(function() {
 		new Main(app.router);
 	});

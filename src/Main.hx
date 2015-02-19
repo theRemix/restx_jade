@@ -13,7 +13,7 @@ class Main
 
   static public function main()
   {
-    var app = new restx.App( PORT );
+    var app = new restx.App( (untyped(process.env.PORT) || PORT ) );
     
     // start server
     app.start( function() new Main(app.router) );
