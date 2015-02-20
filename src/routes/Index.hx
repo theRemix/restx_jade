@@ -2,7 +2,7 @@ package routes;
 
 class Index implements restx.IRoute
 {
-  @:path("/")
+  @:get("/")
   function root() {
     response.send("Root");
   }

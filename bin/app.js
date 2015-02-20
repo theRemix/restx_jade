@@ -1,5 +1,4 @@
-(function () { "use strict";
-var console = (1,eval)('this').console || {log:function(){}};
+(function (console) { "use strict";
 function $extend(from, fields) {
 	function Inherit() {} Inherit.prototype = from; var proto = new Inherit();
 	for (var name in fields) proto[name] = fields[name];
@@ -57,17 +56,17 @@ var Main = function(router) {
 	(function(instance,router1) {
 		var filters = new restx.core.ArgumentsFilter();
 		var processor = new restx.core.ArgumentProcessor(filters,[]);
-		var process = new routes.Index_root_RouteProcess(instance,processor);
+		var process = new routes.Index_root_RouteProcess({ },instance,processor);
 		router1.registerMethod("/","get",process);
 	})(new routes.Index(),router);
 	(function(instance1,router2) {
 		var filters1 = new restx.core.ArgumentsFilter();
 		var processor1 = new restx.core.ArgumentProcessor(filters1,[]);
-		var process1 = new routes.Blog_index_RouteProcess(instance1,processor1);
+		var process1 = new routes.Blog_index_RouteProcess({ },instance1,processor1);
 		router2.registerMethod("/blog/","get",process1);
 		var filters2 = new restx.core.ArgumentsFilter();
-		var processor2 = new restx.core.ArgumentProcessor(filters2,[{ name : "id", optional : false, type : "Int", sources : ["get"]}]);
-		var process2 = new routes.Blog_show_RouteProcess(instance1,processor2);
+		var processor2 = new restx.core.ArgumentProcessor(filters2,[{ name : "id", optional : false, type : "Int", sources : ["params"]}]);
+		var process2 = new routes.Blog_show_RouteProcess({ id : null},instance1,processor2);
 		router2.registerMethod("/blog/:id","get",process2);
 	})(new routes.Blog(),router);
 };
@@ -215,6 +214,30 @@ haxe.ds.StringMap = function() {
 };
 haxe.ds.StringMap.__name__ = true;
 haxe.ds.StringMap.__interfaces__ = [haxe.IMap];
+haxe.ds.StringMap.prototype = {
+	set: function(key,value) {
+		if(__map_reserved[key] != null) this.setReserved(key,value); else this.h[key] = value;
+	}
+	,get: function(key) {
+		if(__map_reserved[key] != null) return this.getReserved(key);
+		return this.h[key];
+	}
+	,exists: function(key) {
+		if(__map_reserved[key] != null) return this.existsReserved(key);
+		return this.h.hasOwnProperty(key);
+	}
+	,setReserved: function(key,value) {
+		if(this.rh == null) this.rh = { };
+		this.rh["$" + key] = value;
+	}
+	,getReserved: function(key) {
+		if(this.rh == null) return null; else return this.rh["$" + key];
+	}
+	,existsReserved: function(key) {
+		if(this.rh == null) return false;
+		return this.rh.hasOwnProperty("$" + key);
+	}
+};
 var js = {};
 js.Boot = function() { };
 js.Boot.__name__ = true;
@@ -288,7 +311,7 @@ js.Boot.__string_rec = function(o,s) {
 var restx = {};
 restx.App = function(port) {
 	this.port = port;
-	this.server = new express.Express({ });
+	this.server = express.Express({ });
 	this.router = new restx.Router(this.server);
 };
 restx.App.__name__ = true;
@@ -303,15 +326,16 @@ restx.App.prototype = {
 };
 restx.IRoute = function() { };
 restx.IRoute.__name__ = true;
-restx.RouteProcess = function(instance,argumentProcessor) {
+restx.RouteProcess = function(args,instance,argumentProcessor) {
 	this.instance = instance;
 	this.argumentProcessor = argumentProcessor;
+	this.args = args;
 };
 restx.RouteProcess.__name__ = true;
 restx.RouteProcess.prototype = {
 	run: function(req,res,next) {
 		var _g = this;
-		this.argumentProcessor.processArguments(req,this["arguments"]).then(function(result) {
+		this.argumentProcessor.processArguments(req,this.args).then(function(result) {
 			switch(result[1]) {
 			case 0:
 				_g.instance.request = req;
@@ -340,7 +364,7 @@ restx.Router = function(server) {
 restx.Router.__name__ = true;
 restx.Router.prototype = {
 	registerMethod: function(path,method,process) {
-		if(null == method) method = "GET";
+		if(null == method) method = "get";
 		Reflect.callMethod(this.server,Reflect.field(this.server,method.toLowerCase()),[path,$bind(process,process.run)]);
 	}
 };
@@ -476,13 +500,13 @@ restx.core.ArgumentsFilter.__name__ = true;
 restx.core.ArgumentsFilter.prototype = {
 	addFilter: function(filter) {
 		if(null == filter.type) throw "Invalid null parameter IFilterArgument.typeName";
-		this.filters.h["$" + filter.type] = filter;
+		this.filters.set(filter.type,filter);
 	}
 	,canFilterType: function(type) {
-		return this.filters.h.hasOwnProperty("$" + type);
+		return this.filters.exists(type);
 	}
 	,getFilterType: function(type) {
-		return this.filters.h["$" + type];
+		return this.filters.get(type);
 	}
 	,checkRequirements: function(requirements) {
 		var _g = 0;
@@ -506,8 +530,8 @@ routes.Blog.prototype = {
 		this.response.send({ id : id});
 	}
 };
-routes.Blog_index_RouteProcess = function(instance,argumentProcessor) {
-	restx.RouteProcess.call(this,instance,argumentProcessor);
+routes.Blog_index_RouteProcess = function(args,instance,argumentProcessor) {
+	restx.RouteProcess.call(this,args,instance,argumentProcessor);
 };
 routes.Blog_index_RouteProcess.__name__ = true;
 routes.Blog_index_RouteProcess.__super__ = restx.RouteProcess;
@@ -516,14 +540,14 @@ routes.Blog_index_RouteProcess.prototype = $extend(restx.RouteProcess.prototype,
 		this.instance.index();
 	}
 });
-routes.Blog_show_RouteProcess = function(instance,argumentProcessor) {
-	restx.RouteProcess.call(this,instance,argumentProcessor);
+routes.Blog_show_RouteProcess = function(args,instance,argumentProcessor) {
+	restx.RouteProcess.call(this,args,instance,argumentProcessor);
 };
 routes.Blog_show_RouteProcess.__name__ = true;
 routes.Blog_show_RouteProcess.__super__ = restx.RouteProcess;
 routes.Blog_show_RouteProcess.prototype = $extend(restx.RouteProcess.prototype,{
 	execute: function() {
-		this.instance.show(this["arguments"].id);
+		this.instance.show(this.args.id);
 	}
 });
 routes.Index = function() {
@@ -535,8 +559,8 @@ routes.Index.prototype = {
 		this.response.send("Root");
 	}
 };
-routes.Index_root_RouteProcess = function(instance,argumentProcessor) {
-	restx.RouteProcess.call(this,instance,argumentProcessor);
+routes.Index_root_RouteProcess = function(args,instance,argumentProcessor) {
+	restx.RouteProcess.call(this,args,instance,argumentProcessor);
 };
 routes.Index_root_RouteProcess.__name__ = true;
 routes.Index_root_RouteProcess.__super__ = restx.RouteProcess;
@@ -777,6 +801,7 @@ if(Array.prototype.map == null) Array.prototype.map = function(f) {
 	}
 	return a;
 };
+var __map_reserved = {}
 
       // Production steps of ECMA-262, Edition 5, 15.4.4.21
       // Reference: http://es5.github.io/#x15.4.4.21
@@ -815,4 +840,4 @@ restx.core.ArgumentsFilter.globalFilters = [new restx.core.filters.DateFilter(),
 thx.core.Floats.pattern_parse = new EReg("^(\\+|-)?\\d+(\\.\\d+)?(e-?\\d+)?$","");
 thx.core.Ints.pattern_parse = new EReg("^[+-]?(\\d+|0x[0-9A-F]+)$","i");
 Main.main();
-})();
+})(typeof console != "undefined" ? console : {log:function(){}});
